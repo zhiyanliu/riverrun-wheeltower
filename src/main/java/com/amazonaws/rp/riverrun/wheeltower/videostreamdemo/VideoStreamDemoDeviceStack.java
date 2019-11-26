@@ -6,15 +6,20 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.StackProps;
 
+import java.io.IOException;
+
 public class VideoStreamDemoDeviceStack extends Stack {
     private final Logger log = LoggerFactory.getLogger("riverrun-video-stream-demo-device-stack");
 
-    public VideoStreamDemoDeviceStack(final Construct parent, final String id) {
+    public VideoStreamDemoDeviceStack(final Construct parent, final String id) throws IOException {
         this(parent, id, null);
     }
 
-    public VideoStreamDemoDeviceStack(final Construct parent, final String id, final StackProps props) {
+    public VideoStreamDemoDeviceStack(final Construct parent, final String id,
+                                      final StackProps props) throws IOException {
         super(parent, id, props);
 
+
     }
+
 }
