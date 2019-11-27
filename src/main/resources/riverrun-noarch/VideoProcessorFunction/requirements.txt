@@ -1,0 +1,4 @@
+kaitaistruct
+# When run this lambda on the non-x86 device/host:
+#   pyzmq is assumed already installed on target host with speical build, e.g. cross to armv8 platform
+# pip3 install pyzmq --install-option='--zmq=bundled'
