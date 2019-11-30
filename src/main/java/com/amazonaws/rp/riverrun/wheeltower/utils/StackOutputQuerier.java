@@ -7,7 +7,7 @@ import com.amazonaws.services.cloudformation.model.*;
 import java.util.List;
 
 public class StackOutputQuerier {
-    private String queryStackOutput(String stackName, String outputKey) {
+    public String query(String stackName, String outputKey) {
         AmazonCloudFormation client = AmazonCloudFormationClientBuilder.defaultClient();
 
         DescribeStacksRequest req = new DescribeStacksRequest();
@@ -24,14 +24,10 @@ public class StackOutputQuerier {
                     return output.getOutputValue();
             }
         } catch (AmazonCloudFormationException e) {
-            throw new IllegalArgumentException(
-                    String.format("stack %s not found, deploy it first", stackName));
+            if (!e.getMessage().contains(String.format("Stack with id %s does not exist", stackName)))
+                throw e;
         }
 
         return null;
-    }
-
-    public String query(final String stackName, final String keyName) {
-        return this.queryStackOutput(stackName, keyName);
     }
 }
