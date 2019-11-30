@@ -34,6 +34,24 @@ if 0 != rc:
 
 # step2, install asset
 
-rc = os.system("mkdir -p %s" % greengrass_home_path)
+# un-package Greengrass core package
+rc = os.system("tar zxf %s --no-same-owner -C /opt" % greengrass_pkg_path)
 if 0 != rc:
     sys.exit(rc)
+
+# copy device root CA, certificates and keys
+rc = os.system("unzip -o %s -d %s/certs" % (credentials_pkg_path, greengrass_home_path))
+if 0 != rc:
+    sys.exit(rc)
+
+# copy Greengreen core config
+rc = os.system("cp %s %s/config" % (greengrass_core_config_path, greengrass_home_path))
+if 0 != rc:
+    sys.exit(rc)
+
+# step3, launch Greengrass core daemon
+rc = os.system("%s/ggc/core/greengrassd start" % greengrass_home_path)
+if 0 != rc:
+    sys.exit(rc)
+
+sys.exit(0)
