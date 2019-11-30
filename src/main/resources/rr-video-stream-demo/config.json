@@ -1,0 +1,30 @@
+{
+  "coreThing": {
+    "caPath": "root-ca.crt",
+    "certPath": "cert.pem",
+    "keyPath": "private.key",
+    "thingArn": "<CORE_THING_ARN>",
+    "iotHost": "<IOT_SERVICE_ENDPOINT>",
+    "ggHost": "<GREENGRASS_SERVICE_ENDPOINT>",
+    "keepAlive": 600
+  },
+  "runtime": {
+    "cgroup": {
+      "useSystemd": "yes"
+    },
+    "allowFunctionsToRunAsRoot": "yes"
+  },
+  "managedRespawn": false,
+  "crypto": {
+    "caPath": "file://certs/root-ca.crt",
+    "principals": {
+      "IoTCertificate": {
+        "privateKeyPath": "file://certs/private.key",
+        "certificatePath": "file://certs/cert.pem"
+      },
+      "SecretsManager": {
+        "privateKeyPath": "file://certs/private.key"
+      }
+    }
+  }
+}
