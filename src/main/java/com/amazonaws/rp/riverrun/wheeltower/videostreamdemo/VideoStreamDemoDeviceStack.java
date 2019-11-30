@@ -1,6 +1,7 @@
 package com.amazonaws.rp.riverrun.wheeltower.videostreamdemo;
 
-import org.apache.commons.codec.binary.Base64;
+import com.amazonaws.rp.riverrun.wheeltower.utils.S3;
+import com.amazonaws.rp.riverrun.wheeltower.utils.StackOutputQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awscdk.core.*;
@@ -13,16 +14,21 @@ import java.util.Map;
 
 public class VideoStreamDemoDeviceStack extends Stack {
     private final Logger log = LoggerFactory.getLogger("riverrun-video-stream-demo-device-stack");
+    private final StackOutputQuerier outputQuerier = new StackOutputQuerier();
+    private final S3 s3util = new S3();
 
     private final String ec2KeyName;
-    private final String ec2SetupScriptURLBase64;
+    private String ec2SetupScriptURL;
 
-    public VideoStreamDemoDeviceStack(final Construct parent, final String id) {
-        this(parent, id, null);
+    public final static String SETUP_SCRIPT_FILE_NAME = "setup.py";
+
+    public VideoStreamDemoDeviceStack(final Construct parent, final String id,
+                                      final String videoStreamDemoGreengrassStackName) {
+        this(parent, id, null, videoStreamDemoGreengrassStackName);
     }
 
     public VideoStreamDemoDeviceStack(final Construct parent, final String id,
-                                      final StackProps props) {
+                                      final StackProps props, final String videoStreamDemoGreengrassStackName) {
         super(parent, id, props);
 
         Object ec2KeyNameObj = this.getNode().tryGetContext("ec2-key-name");
@@ -31,25 +37,18 @@ public class VideoStreamDemoDeviceStack extends Stack {
         else
             this.ec2KeyName = ec2KeyNameObj.toString();
 
-        Object ec2SetupScriptURLObj = this.getNode().tryGetContext("ec2-setup-script-url-base64");
-        if (ec2SetupScriptURLObj == null) {
-            this.ec2SetupScriptURLBase64 = null;
-        } else {
-            String s = ec2SetupScriptURLObj.toString();
-            if (!Base64.isBase64(s))
-                throw new IllegalArgumentException(
-                        "parameter ec2-setup-script-url-base64 is not a valid base64 string");
-            this.ec2SetupScriptURLBase64 = s;
-        }
+        String coreFileBucketName = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "corefilesbucketname");
+        if (coreFileBucketName != null)
+            this.ec2SetupScriptURL =
+                    this.s3util.getObjectPreSignedUrl(coreFileBucketName, SETUP_SCRIPT_FILE_NAME, 7);
 
         // EC2 instance (act device) stuff
-        Vpc vpc = this.createVPC(null);
-//        Subnet subnet = this.createSubnet(vpc, igw);
+        Vpc vpc = this.createVPC();
         SecurityGroup sg = this.createSecurityGroup(vpc);
         this.createEC2Device(vpc, sg);
     }
 
-    private Vpc createVPC(CfnInternetGateway igw) {
+    private Vpc createVPC() {
         // Create a VPC with subnets and a gateway
         SubnetConfiguration subnetConfig = SubnetConfiguration.builder()
                 .name("rr-video-stream-demo-subnet")
@@ -108,19 +107,16 @@ public class VideoStreamDemoDeviceStack extends Stack {
                 .keyName(this.ec2KeyName)
                 .build();
 
-        if (this.ec2SetupScriptURLBase64 != null) {
-            String ec2SetupScriptURL = new String(Base64.decodeBase64(this.ec2SetupScriptURLBase64));
-
-            String cmd = String.format("#!/bin/bash\n" +
-                            "sudo apt update\n" +
-                            "sudo DEBIAN_FRONTEND=noninteractive apt install -y unzip python3.7 python3.7-dev python3-pip python3-apt build-essential\n" +
-                            "sudo ln -sf /usr/bin/python3.7 /usr/bin/python3\n" +
-                            "sudo -H pip3 install pyzmq --install-option='--zmq=bundled'\n" +
-                            "curl -o /tmp/setup.py -fs '%s'\n" +
-                            "python3 /tmp/setup.py\n",
-                    ec2SetupScriptURL);
-            instance.addUserData(cmd);
-        }
+        String cmd = String.format("#!/bin/bash\n" +
+                        "sudo apt update\n" +
+                        "sudo DEBIAN_FRONTEND=noninteractive apt install -y unzip python3.7 " +
+                        "python3.7-dev python3-pip python3-apt build-essential\n" +
+                        "sudo ln -sf /usr/bin/python3.7 /usr/bin/python3\n" +
+                        "sudo -H pip3 install pyzmq --install-option='--zmq=bundled'\n" +
+                        "curl -o /tmp/setup.py -fs '%s'\n" +
+                        "python3 /tmp/setup.py\n",
+                this.ec2SetupScriptURL);
+        instance.addUserData(cmd);
 
         Tag.add(instance, "Name", "rr-video-stream-demo-device");
 

@@ -25,12 +25,12 @@ public class RRWheelTowerApp {
         // makes `cdk deploy` to follow region config provide by AWSSDK (`~/.aws/config`)
         // or use the environment variables "CDK_DEFAULT_ACCOUNT" and "CDK_DEFAULT_REGION"
         //  to inherit environment information from the CLI
-        if (!System.getenv().containsKey("CDK_DEFAULT_REGION")) {
+        if (System.getenv().containsKey("CDK_DEFAULT_REGION")) {
             region = System.getenv().get("CDK_DEFAULT_REGION");
         } else {
             region = new DefaultAwsRegionProviderChain().getRegion();
         }
-        if (!System.getenv().containsKey("CDK_DEFAULT_ACCOUNT")) {
+        if (System.getenv().containsKey("CDK_DEFAULT_ACCOUNT")) {
             account = System.getenv().get("CDK_DEFAULT_ACCOUNT");
         } else {
             AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.defaultClient();
@@ -48,16 +48,18 @@ public class RRWheelTowerApp {
             App cdkApp = App.Builder.create().build();
 
             new VideoStreamDemoGreengrassStack(cdkApp, VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME, props);
-            new VideoStreamDemoDeviceStack(cdkApp, VIDEO_STREAM_DEMO_DEVICE_STACK_NAME, props);
+            new VideoStreamDemoDeviceStack(cdkApp, VIDEO_STREAM_DEMO_DEVICE_STACK_NAME, props,
+                    VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
 
             // required until https://github.com/awslabs/jsii/issues/456 is resolve
             cdkApp.synth();
         } else if ("videostream-demo".equals(argv[0])) {
             try {
+                VideoStreamDemoAssert demoAssert = new VideoStreamDemoAssert(region);
                 if (argv.length == 2 && "prepare-asset".equals(argv[1])) {
-                    new VideoStreamDemoAssert(region).provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                    demoAssert.provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else if (argv.length == 2 && "cleanup-asset".equals(argv[1])) {
-                    new VideoStreamDemoAssert(region).deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                    demoAssert.deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else {
                     log.error("invalid demo command");
                 }
