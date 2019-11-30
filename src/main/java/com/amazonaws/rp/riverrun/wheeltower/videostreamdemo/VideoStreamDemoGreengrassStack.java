@@ -133,6 +133,12 @@ public class VideoStreamDemoGreengrassStack extends Stack {
                 .description("the thing name for RR video stream demo")
                 .build();
 
+        CfnOutput.Builder.create(this, "thing-arn")
+                .value(String.format("arn:aws:iot:%s:%s:thing/%s",
+                        this.getRegion(), this.getAccount(), thing.getThingName()))
+                .description("the thing arn for RR video stream demo")
+                .build();
+
         return thing;
     }
 
