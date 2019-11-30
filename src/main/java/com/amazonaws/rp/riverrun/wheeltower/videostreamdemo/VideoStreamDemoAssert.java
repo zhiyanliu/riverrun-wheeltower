@@ -1,5 +1,6 @@
 package com.amazonaws.rp.riverrun.wheeltower.videostreamdemo;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.rp.riverrun.wheeltower.utils.StackOutputQuerier;
 import com.amazonaws.services.iot.AWSIot;
@@ -7,9 +8,7 @@ import com.amazonaws.services.iot.AWSIotClientBuilder;
 import com.amazonaws.services.iot.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -80,7 +79,21 @@ public class VideoStreamDemoAssert {
     }
 
     public void deProvision(final String videoStreamDemoGreengrassStackName) throws IOException {
+        String coreFileBucketName = this.queryCoreFileBucketName(videoStreamDemoGreengrassStackName);
+        if (coreFileBucketName == null)
+            throw new IllegalArgumentException(String.format(
+                    "the name of s3 bucket to save greengrass core assert files not found, " +
+                            "is the RR video streamer demo stack %s invalid?", videoStreamDemoGreengrassStackName));
 
+        String certId = this.queryThingCertificateId(videoStreamDemoGreengrassStackName);
+        if (certId == null)
+            throw new IllegalArgumentException(String.format("the Greengrass core thing certificate ID not found, " +
+                    "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
+
+        this.deactivateThingCert(certId);
+
+        this.emptyS3Bucket(coreFileBucketName);
+        log.info(String.format("the device files S3 bucket %s is cleaned up to empty", coreFileBucketName));
     }
 
     private String queryCoreFileBucketName(final String videoStreamDemoIoTStackName) {
@@ -373,5 +386,48 @@ public class VideoStreamDemoAssert {
 
     private String getPreSignedSetupScriptUrl(final String coreFileBucketName) {
         return this.getPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.SETUP_SCRIPT_FILE_NAME);
+    }
+
+    private void deactivateThingCert(String certId) {
+        AWSIot iotClient = AWSIotClientBuilder.defaultClient();
+        log.debug("connected to AWS IoT service");
+
+        // Deactivate three certificates
+        //      CLI: aws iot update-certificate --new-status INACTIVE --certificate-id <certificate_id>
+        UpdateCertificateRequest req = new UpdateCertificateRequest();
+        req.setCertificateId(certId);
+        req.setNewStatus("INACTIVE");
+        iotClient.updateCertificate(req);
+
+        log.info(String.format("the certificate %s is deactivated", certId));
+    }
+
+    private void emptyS3Bucket(String coreFileBucketName) {
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+
+        log.debug("connected to AWS S3 service");
+
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(coreFileBucketName).withMaxKeys(10);
+        ListObjectsV2Result result;
+
+        try {
+            do {
+                result = s3Client.listObjectsV2(req);
+
+                for (S3ObjectSummary objSummary : result.getObjectSummaries()) {
+                    log.debug(String.format(
+                            "deleting file %s from the bucket %s ...", objSummary.getKey(), coreFileBucketName));
+                    s3Client.deleteObject(coreFileBucketName, objSummary.getKey());
+                }
+
+                // If there are more than maxKeys keys in the bucket, get a continuation token
+                // and list the next objects.
+                String token = result.getNextContinuationToken();
+                req.setContinuationToken(token);
+            } while (result.isTruncated());
+        } catch (AmazonServiceException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
