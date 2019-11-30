@@ -1,8 +1,12 @@
 package com.amazonaws.rp.riverrun.wheeltower;
 
+import com.amazonaws.regions.DefaultAwsRegionProviderChain;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoAssert;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoDeviceStack;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoGreengrassStack;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awscdk.core.App;
@@ -16,19 +20,32 @@ public class RRWheelTowerApp {
     private static final String VIDEO_STREAM_DEMO_DEVICE_STACK_NAME = "riverrun-video-stream-demo-dev";
 
     public static void main(final String[] argv) throws Exception {
+        String region, account;
+
+        // makes `cdk deploy` to follow region config provide by AWSSDK (`~/.aws/config`)
+        // or use the environment variables "CDK_DEFAULT_ACCOUNT" and "CDK_DEFAULT_REGION"
+        //  to inherit environment information from the CLI
+        if (!System.getenv().containsKey("CDK_DEFAULT_REGION")) {
+            region = System.getenv().get("CDK_DEFAULT_REGION");
+        } else {
+            region = new DefaultAwsRegionProviderChain().getRegion();
+        }
+        if (!System.getenv().containsKey("CDK_DEFAULT_ACCOUNT")) {
+            account = System.getenv().get("CDK_DEFAULT_ACCOUNT");
+        } else {
+            AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.defaultClient();
+            account = stsClient.getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
+        }
+
         if (argv.length == 0) {
-            App cdkApp = App.Builder.create().build();
-
-            // `cdk deploy` follows region config provide by AWSSDK (`~/.aws/config`)
-            // `cdk deploy -c KEY=VALUE (array)` to add/overwrite context.
-            Object regionObj = cdkApp.getNode().tryGetContext("region");
-            String region = null;
-            if (regionObj != null)
-                region = regionObj.toString();
-
             StackProps props = StackProps.builder()
-                    .env(Environment.builder().region(region).build())
+                    .env(Environment.builder()
+                            .region(region)
+                            .account(account)
+                            .build())
                     .build();
+
+            App cdkApp = App.Builder.create().build();
 
             new VideoStreamDemoGreengrassStack(cdkApp, VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME, props);
             new VideoStreamDemoDeviceStack(cdkApp, VIDEO_STREAM_DEMO_DEVICE_STACK_NAME, props);
@@ -38,9 +55,9 @@ public class RRWheelTowerApp {
         } else if ("videostream-demo".equals(argv[0])) {
             try {
                 if (argv.length == 2 && "prepare-asset".equals(argv[1])) {
-                    new VideoStreamDemoAssert().provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                    new VideoStreamDemoAssert(region).provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else if (argv.length == 2 && "cleanup-asset".equals(argv[1])) {
-                    new VideoStreamDemoAssert().deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                    new VideoStreamDemoAssert(region).deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else {
                     log.error("invalid demo command");
                 }

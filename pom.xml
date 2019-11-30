@@ -30,6 +30,7 @@
                 <version>1.6.0</version>
                 <configuration>
                     <mainClass>com.amazonaws.rp.riverrun.wheeltower.RRWheelTowerApp</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
 
@@ -100,7 +101,11 @@
             <artifactId>aws-java-sdk-iot</artifactId>
             <version>1.11.665</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <version>1.11.683</version>
+        </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
@@ -114,12 +119,6 @@
         </dependency>
 
         <!-- General utils libraries -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.10</version>
-        </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
