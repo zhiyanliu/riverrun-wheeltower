@@ -7,12 +7,15 @@ import sys
 # both two will be injected by RiverRun - WheelTower, DON"T edit manually.
 credentials_pkg_url = "<CREDENTIALS_PACKAGE_URL>"
 greengrass_core_config_url = "<GREENGRASS_CORE_CONFIG_URL>"
+greengrass_core_pkg_url = "https://d1onfpft10uf5o.cloudfront.net/greengrass-core/downloads/1.10.0/greengrass-linux-x86-64-1.10.0.tar.gz"
 
 # step1, download asset
 
 credentials_pkg_path = "/tmp/credentials.zip"
 greengrass_core_config_path = "/tmp/config.json"
-greengrass_home = "/opt/greengrass"
+greengrass_pkg_path = "/tmp/greengrass-linux-x86-64-1.10.0.tar.gz"
+greengrass_home_path = "/opt/greengrass"
+
 
 # download greengrass core root CA, certificates and keys
 rc = os.system("curl -o %s -fs '%s'" % (credentials_pkg_path, credentials_pkg_url))
@@ -25,6 +28,12 @@ if 0 != rc:
     sys.exit(rc)
 
 # download greengrass package
-
+rc = os.system("curl -o %s -fs '%s'" % (greengrass_pkg_path, greengrass_core_pkg_url))
+if 0 != rc:
+    sys.exit(rc)
 
 # step2, install asset
+
+rc = os.system("mkdir -p %s" % greengrass_home_path)
+if 0 != rc:
+    sys.exit(rc)
