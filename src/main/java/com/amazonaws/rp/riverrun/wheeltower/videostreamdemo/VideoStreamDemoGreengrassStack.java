@@ -1,5 +1,9 @@
 package com.amazonaws.rp.riverrun.wheeltower.videostreamdemo;
 
+import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.function.MetadataFrameEmitterOption;
+import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.function.VideoEmitterOption;
+import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.function.VideoProcessorOption;
+import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.function.VideoStreamerOption;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -75,6 +79,16 @@ public class VideoStreamDemoGreengrassStack extends Stack {
         List<String> functionNames = Arrays.asList(
                 METADATA_FRAME_EMITTER_FUNC_NAME, VIDEO_EMITTER_FUNC_NAME,
                 VIDEO_PROCESSOR_FUNC_NAME, VIDEO_STREAMER_FUNC_NAME);
+        List<Object> functionOptions = Arrays.asList(
+                new MetadataFrameEmitterOption(),
+                new VideoEmitterOption(),
+                new VideoProcessorOption(),
+                new VideoStreamerOption());
+        List<Number> memorySizeOptions = Arrays.asList(
+                64 * 1024,  // in KB unit
+                64 * 1024,
+                512 * 1024,
+                512 * 1024);
 
         // IoT thing stuff
         CfnPolicy policy = this.createThingPolicy();
@@ -90,7 +104,8 @@ public class VideoStreamDemoGreengrassStack extends Stack {
         // IoT Greengrass stuff
         Role ggGroupRole = this.createGreengressGroupRole();
         CfnCoreDefinitionVersion coreVersion = this.createGreengrassCore(cert, thing);
-        CfnFunctionDefinitionVersion iotFunctionVersion = this.createGreengrassFunctionVersion(functionVersions);
+        CfnFunctionDefinitionVersion iotFunctionVersion = this.createGreengrassFunctionVersion(
+                functionVersions, functionOptions, memorySizeOptions);
         this.createGreengrassGroup(ggGroupRole, coreVersion, iotFunctionVersion);
     }
 
@@ -301,22 +316,19 @@ public class VideoStreamDemoGreengrassStack extends Stack {
                 .build();
     }
 
-    @lombok.Data
-    private class env {
-        private final String ABC = "DEF";
-    }
+    private CfnFunctionDefinitionVersion.FunctionProperty createGreengrassFunction(
+            @Nullable Version function, @Nullable Object options, @Nullable Number memorySizeOption) {
 
-    private CfnFunctionDefinitionVersion.FunctionProperty createGreengrassFunction(@Nullable Version function) {
         CfnFunctionDefinitionVersion.EnvironmentProperty envProp =
                 CfnFunctionDefinitionVersion.EnvironmentProperty.builder()
                         .accessSysfs(true)
-                        .variables(new env())
+                        .variables(options)
                         .build();
 
         CfnFunctionDefinitionVersion.FunctionConfigurationProperty functionConfigProp =
                 CfnFunctionDefinitionVersion.FunctionConfigurationProperty.builder()
                         .pinned(true) // long-lived and keep it running indefinitely
-                        .memorySize(64 * 1024) // KB unit
+                        .memorySize(memorySizeOption)
                         .environment(envProp)
                         .timeout(0)
                         .build();
@@ -328,7 +340,9 @@ public class VideoStreamDemoGreengrassStack extends Stack {
                 .build();
     }
 
-    private CfnFunctionDefinitionVersion createGreengrassFunctionVersion(List<Version> functionVersions) {
+    private CfnFunctionDefinitionVersion createGreengrassFunctionVersion(
+            List<Version> functionVersions, List<Object> options, List<Number> memorySizeOptions) {
+
         CfnFunctionDefinition functionDefinition = CfnFunctionDefinition.Builder.create(this, GG_FUNCTION_NAME)
                 .name(GG_FUNCTION_NAME)
                 .build();
@@ -354,8 +368,9 @@ public class VideoStreamDemoGreengrassStack extends Stack {
 
         List<Object> functionProperties = new ArrayList<>(functionVersions.size());
 
-        for (Version function : functionVersions) {
-            CfnFunctionDefinitionVersion.FunctionProperty functionProp = this.createGreengrassFunction(function);
+        for (int i = 0; i < functionVersions.size(); i++) {
+            CfnFunctionDefinitionVersion.FunctionProperty functionProp =
+                    this.createGreengrassFunction(functionVersions.get(i), options.get(i), memorySizeOptions.get(i));
             functionProperties.add(functionProp);
         }
 
