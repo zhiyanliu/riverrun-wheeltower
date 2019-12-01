@@ -60,6 +60,8 @@ public class RRWheelTowerApp {
                     demoAssert.provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else if (argv.length == 2 && "cleanup-asset".equals(argv[1])) {
                     demoAssert.deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                } else if (argv.length == 2 && "deploy-app".equals(argv[1])) {
+                    demoAssert.deployApp(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else {
                     log.error("invalid demo command");
                 }

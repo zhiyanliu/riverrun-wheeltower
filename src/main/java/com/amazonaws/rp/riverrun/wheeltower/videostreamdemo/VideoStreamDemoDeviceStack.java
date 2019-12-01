@@ -37,7 +37,8 @@ public class VideoStreamDemoDeviceStack extends Stack {
         else
             this.ec2KeyName = ec2KeyNameObj.toString();
 
-        String coreFileBucketName = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "corefilesbucketname");
+        String coreFileBucketName = this.outputQuerier.query(
+                this.log, videoStreamDemoGreengrassStackName, "corefilesbucketname");
         if (coreFileBucketName != null)
             this.ec2SetupScriptURL =
                     this.s3util.getObjectPreSignedUrl(coreFileBucketName, SETUP_SCRIPT_FILE_NAME, 7);

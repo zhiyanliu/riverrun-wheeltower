@@ -51,7 +51,7 @@ public class S3 {
         }
     }
 
-    public void emptyBucket(final Logger log, String bucketName) {
+    public void emptyBucket(final Logger log, String bucketName) throws AmazonServiceException {
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         log.debug("connected to AWS S3 service");
@@ -75,8 +75,8 @@ public class S3 {
                 req.setContinuationToken(token);
             } while (result.isTruncated());
         } catch (AmazonServiceException e) {
-            e.printStackTrace();
-            throw e;
+            if (!e.getMessage().contains("does not exist"))
+                throw e;
         }
     }
 }

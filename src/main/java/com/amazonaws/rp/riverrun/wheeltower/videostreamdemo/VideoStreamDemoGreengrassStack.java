@@ -330,7 +330,7 @@ public class VideoStreamDemoGreengrassStack extends Stack {
                         .pinned(true) // long-lived and keep it running indefinitely
                         .memorySize(memorySizeOption)
                         .environment(envProp)
-                        .timeout(0)
+                        .timeout(3)  // attention: 0 is an invalid value, for Greengrass core
                         .build();
 
         return CfnFunctionDefinitionVersion.FunctionProperty.builder()
@@ -391,10 +391,15 @@ public class VideoStreamDemoGreengrassStack extends Stack {
                 .roleArn(ggGroupRole.getRoleArn())
                 .build();
 
-        CfnGroupVersion.Builder.create(this, GG_CROUP_VER_NAME)
+        CfnGroupVersion groupVersion = CfnGroupVersion.Builder.create(this, GG_CROUP_VER_NAME)
                 .groupId(group.getRef())
                 .coreDefinitionVersionArn(coreVersion.getRef())
                 .functionDefinitionVersionArn(functionVersion.getRef())
+                .build();
+
+        CfnOutput.Builder.create(this, "greengrass-group-id")
+                .value(groupVersion.getGroupId())
+                .description("the Greengrass group ID for RR video stream demo")
                 .build();
     }
 }

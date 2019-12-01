@@ -1,7 +1,11 @@
 package com.amazonaws.rp.riverrun.wheeltower.videostreamdemo;
 
+import com.amazonaws.rp.riverrun.wheeltower.utils.Greengrass;
 import com.amazonaws.rp.riverrun.wheeltower.utils.S3;
 import com.amazonaws.rp.riverrun.wheeltower.utils.StackOutputQuerier;
+import com.amazonaws.services.greengrass.AWSGreengrass;
+import com.amazonaws.services.greengrass.AWSGreengrassClientBuilder;
+import com.amazonaws.services.greengrass.model.*;
 import com.amazonaws.services.iot.AWSIot;
 import com.amazonaws.services.iot.AWSIotClientBuilder;
 import com.amazonaws.services.iot.model.*;
@@ -19,7 +23,8 @@ import java.util.zip.ZipOutputStream;
 public class VideoStreamDemoAssert {
     private final Logger log = LoggerFactory.getLogger("riverrun-video-stream-demo-asset");
     private final StackOutputQuerier outputQuerier = new StackOutputQuerier();
-    private final S3 s3util = new S3();
+    private final S3 s3Util = new S3();
+    private final Greengrass ggUtils = new Greengrass();
 
     private final static String PUB_KEY_NAME = "rr-video-stream-demo-greengrass-core-thing-public";
     private final static String PRV_KEY_NAME = "rr-video-stream-demo-greengrass-core-thing-private";
@@ -35,18 +40,19 @@ public class VideoStreamDemoAssert {
     }
 
     public void provision(final String videoStreamDemoGreengrassStackName) throws IOException {
-        String coreFileBucketName = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "corefilesbucketname");
+        String coreFileBucketName = this.outputQuerier.query(
+                this.log, videoStreamDemoGreengrassStackName, "corefilesbucketname");
         if (coreFileBucketName == null)
             throw new IllegalArgumentException(String.format(
                     "the name of s3 bucket to save greengrass core assert files not found, " +
                             "is the RR video streamer demo stack %s invalid?", videoStreamDemoGreengrassStackName));
 
-        String certId = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "certid");
+        String certId = this.outputQuerier.query(this.log, videoStreamDemoGreengrassStackName, "certid");
         if (certId == null)
             throw new IllegalArgumentException(String.format("the Greengrass core thing certificate ID not found, " +
                     "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
 
-        String thingArn = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "thingarn");
+        String thingArn = this.outputQuerier.query(this.log, videoStreamDemoGreengrassStackName, "thingarn");
         if (thingArn == null)
             throw new IllegalArgumentException(String.format("the Greengrass core thing ARN not found, " +
                     "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
@@ -54,35 +60,86 @@ public class VideoStreamDemoAssert {
         // RiverRun stuff
         String zipFilePath = this.prepareCredentials(certId);
         String configFilePath = this.prepareConfig(thingArn);
-        this.s3util.uploadFile(this.log, coreFileBucketName, zipFilePath);
-        this.s3util.uploadFile(this.log, coreFileBucketName, configFilePath);
+        this.s3Util.uploadFile(this.log, coreFileBucketName, zipFilePath);
+        this.s3Util.uploadFile(this.log, coreFileBucketName, configFilePath);
 
         String preSignedCredentialsPackageURL =
-                this.s3util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CREDENTIALS_FILE_NAME, 7);
+                this.s3Util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CREDENTIALS_FILE_NAME, 7);
         String preSignedConfigURL =
-                this.s3util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CONFIG_FILE_NAME, 7);
+                this.s3Util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CONFIG_FILE_NAME, 7);
 
         String scriptFilePath = this.prepareSetupScript(preSignedCredentialsPackageURL, preSignedConfigURL);
 
-        this.s3util.uploadFile(this.log, coreFileBucketName, scriptFilePath);
+        this.s3Util.uploadFile(this.log, coreFileBucketName, scriptFilePath);
+
+        log.info(String.format("Greengrass core files is prepared at %s", coreFileBucketName));
     }
 
     public void deProvision(final String videoStreamDemoGreengrassStackName) {
-        String coreFileBucketName = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "corefilesbucketname");
+        String coreFileBucketName = this.outputQuerier.query(
+                this.log, videoStreamDemoGreengrassStackName, "corefilesbucketname");
         if (coreFileBucketName == null)
             throw new IllegalArgumentException(String.format(
                     "the name of s3 bucket to save greengrass core assert files not found, " +
                             "is the RR video streamer demo stack %s invalid?", videoStreamDemoGreengrassStackName));
 
-        String certId = this.outputQuerier.query(videoStreamDemoGreengrassStackName, "certid");
+        String greengrassGroupId = this.outputQuerier.query(
+                this.log, videoStreamDemoGreengrassStackName, "greengrassgroupid");
+        if (greengrassGroupId == null)
+            throw new IllegalArgumentException(String.format("the Greengrass group ID not found, " +
+                    "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
+
+        String certId = this.outputQuerier.query(this.log, videoStreamDemoGreengrassStackName, "certid");
         if (certId == null)
             throw new IllegalArgumentException(String.format("the Greengrass core thing certificate ID not found, " +
                     "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
 
         this.deactivateThingCert(certId);
+        log.info(String.format("Greengrass core thing certificate %s is deactivated", certId));
 
-        this.s3util.emptyBucket(this.log, coreFileBucketName);
-        log.info(String.format("the device files S3 bucket %s is cleaned up to empty", coreFileBucketName));
+        this.s3Util.emptyBucket(this.log, coreFileBucketName);
+        log.info(String.format("Greengrass core files S3 bucket %s is cleaned up to empty", coreFileBucketName));
+
+        this.ggUtils.resetGroupDeployment(this.log, greengrassGroupId);
+        log.info(String.format("Greengrass group %s deployment is reset", greengrassGroupId));
+    }
+
+    public void deployApp(final String videoStreamDemoGreengrassStackName) {
+        String greengrassGroupId = this.outputQuerier.query(
+                this.log, videoStreamDemoGreengrassStackName, "greengrassgroupid");
+        if (greengrassGroupId == null)
+            throw new IllegalArgumentException(String.format("the Greengrass group ID not found, " +
+                    "is the RR video stream demo stack %s invalid?", videoStreamDemoGreengrassStackName));
+
+        String deploymentId = this.createGreengressDeployment(greengrassGroupId);
+
+        this.ggUtils.waitGroupDeployDone(this.log, greengrassGroupId, deploymentId);
+
+        log.info("RiverRun has been deployed on the device Greengrass core running");
+    }
+
+    private String createGreengressDeployment(final String greengrassGroupId) {
+        AWSGreengrass greengrassClient = AWSGreengrassClientBuilder.defaultClient();
+
+        log.debug("connected to AWS Greengrass service");
+
+        ListGroupVersionsRequest listGroupVersionsRequest = new ListGroupVersionsRequest();
+        listGroupVersionsRequest.setGroupId(greengrassGroupId);
+        listGroupVersionsRequest.setMaxResults("10");
+
+        ListGroupVersionsResult listGroupVersionsResult = greengrassClient.listGroupVersions(listGroupVersionsRequest);
+        if (listGroupVersionsResult.getVersions().size() != 1)
+            throw new IllegalArgumentException(String.format("the Greengrass group id %s is invalid, " +
+                    "is it created by RR video stream demo stack?", greengrassGroupId));
+
+        CreateDeploymentRequest deploymentReq = new CreateDeploymentRequest();
+        deploymentReq.setDeploymentType(DeploymentType.NewDeployment);
+        deploymentReq.setGroupId(greengrassGroupId);
+        deploymentReq.setGroupVersionId(listGroupVersionsResult.getVersions().get(0).getVersion());
+
+        CreateDeploymentResult result = greengrassClient.createDeployment(deploymentReq);
+
+        return result.getDeploymentId();
     }
 
     private void generateCredentials(final String certId, final String certFilePath, final String rootCaPath,
@@ -270,12 +327,17 @@ public class VideoStreamDemoAssert {
         AWSIot iotClient = AWSIotClientBuilder.defaultClient();
         log.debug("connected to AWS IoT service");
 
-        // Deactivate three certificates
-        //      CLI: aws iot update-certificate --new-status INACTIVE --certificate-id <certificate_id>
-        UpdateCertificateRequest req = new UpdateCertificateRequest();
-        req.setCertificateId(certId);
-        req.setNewStatus("INACTIVE");
-        iotClient.updateCertificate(req);
+        try {
+            // Deactivate three certificates
+            //      CLI: aws iot update-certificate --new-status INACTIVE --certificate-id <certificate_id>
+            UpdateCertificateRequest req = new UpdateCertificateRequest();
+            req.setCertificateId(certId);
+            req.setNewStatus("INACTIVE");
+            iotClient.updateCertificate(req);
+        } catch (Exception e) {
+            if (!e.getMessage().contains("does not exist"))
+                throw e;
+        }
 
         log.info(String.format("the certificate %s is deactivated", certId));
     }
