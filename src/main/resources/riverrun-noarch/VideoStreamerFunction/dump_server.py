@@ -27,6 +27,17 @@ class DumpServer(base_server.Server):
             self._rtp_pkt_file = None
 
         try:
+            # RTP packet dump file
+            video_pkt_file_path = constants.get_video_packet_file_save_path()
+            video_pkt_file_dir = os.path.dirname(video_pkt_file_path)
+            if not os.path.exists(video_pkt_file_dir):
+                os.makedirs(video_pkt_file_dir)
+            self._video_pkt_file = open(video_pkt_file_path, "wb+")
+        except Exception as e:
+            print("failed to open video packet dump file: %s" % str(e))
+            self._video_pkt_file = None
+
+        try:
             # metadata frame dump file
             frame_file_path = constants.get_metadata_frame_file_save_path()
             frame_file_dir = os.path.dirname(frame_file_path)
@@ -41,9 +52,11 @@ class DumpServer(base_server.Server):
         while True:
             try:
                 while not self._stop_flag.is_set():
-                    meta_frame_buff, timestamp_rtp, rtp_pkt = self._sync_pkt_queue.get(timeout=1)
-                    self._dump_meta_frame_in_net_sock_format(timestamp_rtp, meta_frame_buff)
-                    self._dump_rtp_pkt_in_net_sock_format(rtp_pkt)
+                    meta_frame_buff, timestamp_rtp, rtp_pkt_buff = self._sync_pkt_queue.get(timeout=1)
+                    if meta_frame_buff is not None:
+                        self._dump_meta_frame_in_net_sock_format(timestamp_rtp, meta_frame_buff)
+                    self._dump_rtp_pkt_in_net_sock_format(rtp_pkt_buff)
+                    self._dump_video_pkt(timestamp_rtp, rtp_pkt_buff)
 
                 break  # server stopped
             except multiprocessing.queues.Empty:
@@ -61,21 +74,35 @@ class DumpServer(base_server.Server):
         except Exception as e:
             print("failed to write metadata frame dump file: %s" % str(e))
 
-    def _dump_rtp_pkt_in_net_sock_format(self, rtp_pkt):
-        rtp_pkt_len = len(rtp_pkt)
+    def _dump_rtp_pkt_in_net_sock_format(self, rtp_pkt_buff):
+        rtp_pkt_len = len(rtp_pkt_buff)
 
         buff = struct.pack(
             # unsigned int (4 bytes, big-endian), char[]
-            "!I%ds" % rtp_pkt_len, rtp_pkt_len, rtp_pkt)
+            "!I%ds" % rtp_pkt_len, rtp_pkt_len, rtp_pkt_buff)
 
         try:
             self._rtp_pkt_file.write(buff)
         except Exception as e:
             print("failed to write RTP packet dump file: %s" % str(e))
 
+    def _dump_video_pkt(self, timestamp, rtp_pkt_buff):
+        rtp_pkt_buff_len = len(rtp_pkt_buff)
+
+        buff = struct.pack(
+            # unsigned int (4 bytes, big-endian), unsigned int (4 bytes, big-endian), char[]
+            "!II%ds" % rtp_pkt_buff_len, timestamp, rtp_pkt_buff_len, rtp_pkt_buff)
+
+        try:
+            self._video_pkt_file.write(buff)
+        except Exception as e:
+            print("failed to write video packet dump file: %s" % str(e))
+
     def release(self):
         super(DumpServer, self).release()
         if self._rtp_pkt_file is not None:
             self._rtp_pkt_file.close()
+        if self._video_pkt_file is not None:
+            self._video_pkt_file.close()
         if self._meta_frame_file is not None:
             self._meta_frame_file.close()

@@ -11,7 +11,8 @@ class FrameNetSocketHandler(socketserver.StreamRequestHandler):
 
     def _log_routine(self):
         # log latest read metadata frame timestamp
-        print("latest read metadata frame timestamp: %d" % self._latest_timestamp)
+        if self._latest_timestamp is not None:
+            print("latest read metadata frame timestamp: %d" % self._latest_timestamp)
         self._start_log_routine()
 
     def _set_keepalive(self, after_idle_sec=60, interval_sec=60, max_fails=10):
@@ -27,16 +28,17 @@ class FrameNetSocketHandler(socketserver.StreamRequestHandler):
 
     def setup(self):
         super(FrameNetSocketHandler, self).setup()
+        self._sock_fd = self.rfile.fileno()
         self._set_keepalive(after_idle_sec=30)
         self.connection.settimeout(30)  # seconds
 
         # latest read metadata frame timestamp
-        self._latest_timestamp = -1
+        self._latest_timestamp = None
         self._start_log_routine()
 
     def finish(self):
         super(FrameNetSocketHandler, self).finish()
-        print("frame handle session (for socket fd #%d) exits" % self.rfile.fileno())
+        print("frame handle session (for socket fd #%d) exits" % self._sock_fd)
 
     def handle(self):
         try:
@@ -56,6 +58,7 @@ class FrameNetSocketHandler(socketserver.StreamRequestHandler):
                 if meta_frame_buff_len <= 0:
                     print("invalid length of metadata frame received: %d, ignored" % meta_frame_buff_len)
                     continue
+
                 meta_frame_buff = self.rfile.read(meta_frame_buff_len)  # char[]
                 if len(meta_frame_buff) == 0:
                     return  # EOF
@@ -66,7 +69,9 @@ class FrameNetSocketHandler(socketserver.StreamRequestHandler):
                     break
         except (socket.timeout,  # for python timeout way, connection.settimeout()
                 TimeoutError):  # Connection timed out (errno = 110), for OS TCP keepalive way, _set_keepalive()
-            print("the client (socket fd #%d) is gone" % self.rfile.fileno())
+            print("the client (socket fd #%d) is gone" % self._sock_fd)
+        except struct.error as e:
+            print("invalid PDU received: %s" % str(e))
 
     def _handle_meta_frame(self, meta_frame_timestamp, meta_frame_buff):
         try:

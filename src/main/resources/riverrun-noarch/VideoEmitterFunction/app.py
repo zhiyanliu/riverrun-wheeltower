@@ -16,7 +16,7 @@ def _signal_handler(sig, frame):
     global _stop_flag
     stop_flag = True
     time.sleep(2)
-    print("metadata frame emitter exits")
+    print("video emitter exits")
     sys.exit(0)
 
 

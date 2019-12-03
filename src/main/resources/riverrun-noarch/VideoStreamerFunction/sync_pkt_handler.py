@@ -146,6 +146,8 @@ class SyncPacketHandler(socketserver.StreamRequestHandler):
         except (socket.timeout,  # for python timeout way, connection.settimeout()
                 TimeoutError):  # Connection timed out (errno = 110), for OS TCP keepalive way, _set_keepalive()
             print("the client (source id #%d) is gone" % self._source_id)
+        except struct.error as e:
+            print("invalid PDU received: %s" % str(e))
 
     def _handle_sync_pkt(self, rtp_pkt_buff, meta_frame_buff):
         try:

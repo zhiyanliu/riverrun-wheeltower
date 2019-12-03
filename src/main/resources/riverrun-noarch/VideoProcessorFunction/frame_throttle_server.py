@@ -6,10 +6,10 @@ import constants
 
 
 class _Sender(threading.Thread):
-    def __init__(self, stop_flag, frame_handle_pipe_w, throttle_tolerate_count, queue):
+    def __init__(self, stop_flag, frame_throttle_pipe_w, throttle_tolerate_count, queue):
         threading.Thread.__init__(self)
         self._stop_flag = stop_flag
-        self._frame_handle_pipe_w = frame_handle_pipe_w
+        self._frame_throttle_pipe_w = frame_throttle_pipe_w
         self._max_count = throttle_tolerate_count
         self._queue = queue
         self._ready = threading.Event()
@@ -18,7 +18,7 @@ class _Sender(threading.Thread):
         while not self._stop_flag.is_set():
             try:
                 meta_frame_timestamp, meta_frame_buff = self._queue.popleft()
-                self._frame_handle_pipe_w.send((meta_frame_timestamp, meta_frame_buff))
+                self._frame_throttle_pipe_w.send((meta_frame_timestamp, meta_frame_buff))
             except IndexError:  # no elements are present in self._queue
                 self._ready.clear()
                 self._ready.wait(timeout=1)

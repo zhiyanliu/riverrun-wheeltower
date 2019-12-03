@@ -17,12 +17,13 @@ class VideoPacketNetSocketHandler(socketserver.StreamRequestHandler):
 
     def setup(self):
         super(VideoPacketNetSocketHandler, self).setup()
+        self._sock_fd = self.rfile.fileno()
         self._set_keepalive(after_idle_sec=30)
         self.connection.settimeout(30)  # seconds
 
     def finish(self):
         super(VideoPacketNetSocketHandler, self).finish()
-        print("video packet handle session (for socket fd #%d) exits" % self.rfile.fileno())
+        print("video packet handle session (for socket fd #%d) exits" % self._sock_fd)
 
     def handle(self):
         try:
@@ -44,7 +45,9 @@ class VideoPacketNetSocketHandler(socketserver.StreamRequestHandler):
                     break
         except (socket.timeout,  # for python timeout way, connection.settimeout()
                 TimeoutError):  # Connection timed out (errno = 110), for OS TCP keepalive way, _set_keepalive()
-            print("the client (socket fd #%d) is gone" % self.rfile.fileno())
+            print("the client (socket fd #%d) is gone" % self._sock_fd)
+        except struct.error as e:
+            print("invalid PDU received: %s" % str(e))
 
     def _handle_video_packet(self, video_packet_buff):
         try:
