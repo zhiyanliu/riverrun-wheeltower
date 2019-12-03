@@ -39,7 +39,11 @@ public class VideoStreamDemoDeviceStack extends Stack {
 
         String coreFileBucketName = this.outputQuerier.query(
                 this.log, videoStreamDemoGreengrassStackName, "corefilesbucketname");
-        if (coreFileBucketName != null)
+        if (coreFileBucketName == null)
+            throw new IllegalArgumentException(String.format(
+                    "the name of s3 bucket to save greengrass core assert files not found, " +
+                            "is the RR video streamer demo stack %s invalid?", videoStreamDemoGreengrassStackName));
+        else
             this.ec2SetupScriptURL =
                     this.s3util.getObjectPreSignedUrl(coreFileBucketName, SETUP_SCRIPT_FILE_NAME, 7);
 
@@ -74,8 +78,13 @@ public class VideoStreamDemoDeviceStack extends Stack {
                 .vpc(vpc)
                 .build();
 
+        // for PDU input
+        sg.addIngressRule(Peer.anyIpv4(), Port.tcp(9525)); // metadata frame
+        sg.addIngressRule(Peer.anyIpv4(), Port.tcp(9526)); // video packet
+
+        // for debug
         if (this.ec2KeyName != null) {
-            sg.addIngressRule(Peer.anyIpv4(), Port.tcp(22));
+            sg.addIngressRule(Peer.anyIpv4(), Port.tcp(22)); // ssh
         }
 
         return sg;

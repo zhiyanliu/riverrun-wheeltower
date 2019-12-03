@@ -115,7 +115,7 @@ public class VideoStreamDemoAssert {
 
         this.ggUtils.waitGroupDeployDone(this.log, greengrassGroupId, deploymentId);
 
-        log.info("RiverRun has been deployed on the device Greengrass core running");
+        log.info("RiverRun has been deployed on the device by Greengrass core");
     }
 
     private String createGreengressDeployment(final String greengrassGroupId) {

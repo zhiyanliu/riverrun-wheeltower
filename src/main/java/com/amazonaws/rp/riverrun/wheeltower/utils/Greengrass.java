@@ -40,16 +40,21 @@ public class Greengrass {
 
         log.debug("connected to AWS Greengrass service");
 
+        String status, lastStatus = null;
         do {
-            String status = this.queryGroupDeployStatus(log, greengrassClient, greengrassGroupId, deploymentId);
+            status = this.queryGroupDeployStatus(log, greengrassClient, greengrassGroupId, deploymentId);
 
-            log.debug(String.format("the deployment status of Greengrass group %s: %s", greengrassGroupId, status));
+            if (!status.equals(lastStatus)) {
+                log.debug(String.format("the deployment status of Greengrass group %s: %s", greengrassGroupId, status));
 
-            if (status.equals("Success") || status.equals("Failure"))
-                break;
+                if (status.equals("Success") || status.equals("Failure"))
+                    break;
+            }
+
+            lastStatus = status;
 
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException ie) {
                 break;
             }

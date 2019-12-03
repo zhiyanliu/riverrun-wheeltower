@@ -33,11 +33,11 @@ def get_sync_pkt_server_heartbeat_interval_sec(default_interval=30):
 
 
 # Outcome
-def get_rtp_packet_file_save_path(default_path="/tmp/riverrun-streamer/rtp.dump"):
+def get_rtp_packet_file_save_path(default_path="/tmp/riverrun-streamer/video_rtp.dump"):
     os.environ.setdefault(RTP_PACKET_FILE_SAVE_PATH_ENV_VAR_NAME, default_path)
     return os.environ[RTP_PACKET_FILE_SAVE_PATH_ENV_VAR_NAME].strip()
 
 
-def get_metadata_frame_file_save_path(default_path="/tmp/riverrun-streamer/metadata.dump"):
+def get_metadata_frame_file_save_path(default_path="/tmp/riverrun-streamer/metadata_frame.dump"):
     os.environ.setdefault(METADATA_FRAME_FILE_SAVE_PATH_ENV_VAR_NAME, default_path)
     return os.environ[METADATA_FRAME_FILE_SAVE_PATH_ENV_VAR_NAME].strip()

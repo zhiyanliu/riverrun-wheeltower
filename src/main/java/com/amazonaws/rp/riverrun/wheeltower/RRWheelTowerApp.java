@@ -4,6 +4,7 @@ import com.amazonaws.regions.DefaultAwsRegionProviderChain;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoAssert;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoDeviceStack;
 import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoGreengrassStack;
+import com.amazonaws.rp.riverrun.wheeltower.videostreamdemo.VideoStreamDemoInput;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
@@ -56,12 +57,18 @@ public class RRWheelTowerApp {
         } else if ("videostream-demo".equals(argv[0])) {
             try {
                 VideoStreamDemoAssert demoAssert = new VideoStreamDemoAssert(region);
+                VideoStreamDemoInput input = new VideoStreamDemoInput();
+
                 if (argv.length == 2 && "prepare-asset".equals(argv[1])) {
                     demoAssert.provision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else if (argv.length == 2 && "cleanup-asset".equals(argv[1])) {
                     demoAssert.deProvision(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
                 } else if (argv.length == 2 && "deploy-app".equals(argv[1])) {
                     demoAssert.deployApp(VIDEO_STREAM_DEMO_GREENGRASS_STACK_NAME);
+                } else if (argv.length == 2 && "send-data".equals(argv[1])) {
+                    input.send(VIDEO_STREAM_DEMO_DEVICE_STACK_NAME); // query device ip from stack outputs
+                } else if (argv.length == 3 && "send-data".equals(argv[1])) {
+                    input.sendTo(argv[2]); // use own device
                 } else {
                     log.error("invalid demo command");
                 }
