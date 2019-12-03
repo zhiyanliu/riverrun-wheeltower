@@ -49,9 +49,8 @@ public class VideoPacketSendThread extends SendThread {
 
                     this.writeVideoPacket(record);
 
-                    if (this.isNewFrame(record)) {
-                        Thread.sleep(35);
-                    }
+                    if (this.isNewFrame(record))
+                        Thread.sleep(35); // change this to control FPS/workload pressure
 
                     this.lastRecord = record;
                 }
