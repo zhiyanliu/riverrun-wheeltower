@@ -38,7 +38,7 @@ def get_net_socket_server_port(default_server_port=9526):
     return port
 
 
-def get_video_packet_read_type(default_type=READ_TYPE_HORIZON_SDK):
+def get_video_packet_read_type(default_type=READ_TYPE_NET_SOCKET):
     os.environ.setdefault(READ_TYPE_ENV_VAR_NAME, default_type)
     return os.environ[READ_TYPE_ENV_VAR_NAME].strip()
 
@@ -61,7 +61,7 @@ def get_publish_topic(default_topic="rtp"):
     return os.environ[PUBLISH_TOPIC_ENV_VAR_NAME].strip()
 
 
-def get_client_emit_type(default_type=EMIT_TYPE_REQUEST):
+def get_client_emit_type(default_type=EMIT_TYPE_PUBLISH):
     os.environ.setdefault(EMIT_TYPE_ENV_VAR_NAME, default_type)
     return os.environ[EMIT_TYPE_ENV_VAR_NAME].strip()
 

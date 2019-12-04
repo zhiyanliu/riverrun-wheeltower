@@ -22,7 +22,7 @@ def get_sync_pkt_server_port(default_server_port=9532):
     return port
 
 
-def get_sync_pkt_server_heartbeat_interval_sec(default_interval=30):
+def get_sync_pkt_server_heartbeat_interval_sec(default_interval=20):
     os.environ.setdefault(SYNC_PACKET_SERVER_HEARTBEAT_INTERVAL_SEC_ENV_VAR_NAME, str(default_interval))
 
     try:

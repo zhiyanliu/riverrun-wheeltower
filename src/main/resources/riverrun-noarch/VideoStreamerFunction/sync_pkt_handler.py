@@ -70,13 +70,14 @@ class SyncPacketHandler(socketserver.StreamRequestHandler):
         self._start_log_routine()
 
         self._heartbeat_interval = constants.get_sync_pkt_server_heartbeat_interval_sec()
+        self._conn_timeout = self._heartbeat_interval * 2
         # currently we use own heartbeat mechanism to help client to detect if server is alive
-        # self._set_keepalive(self._heartbeat_interval, self._heartbeat_interval, 1)
+        # self._set_keepalive(self._conn_timeout, self._conn_timeout, 1)
         # send own heartbeat from server to client for client side detection
         self._start_heartbeat_routine()
         # due to we haven't heartbeat from client to server to help server to detect if client is alive
         # we use python socket timeout mechanism for server side detection
-        self.connection.settimeout(self._heartbeat_interval)
+        self.connection.settimeout(self._conn_timeout)
 
         self._log_queue = multiprocessing.Queue(maxsize=self.server.sync_pkt_queue_size)
 
@@ -145,7 +146,8 @@ class SyncPacketHandler(socketserver.StreamRequestHandler):
                 self._handle_sync_pkt(rtp_pkt_buff, meta_frame_buff)
         except (socket.timeout,  # for python timeout way, connection.settimeout()
                 TimeoutError):  # Connection timed out (errno = 110), for OS TCP keepalive way, _set_keepalive()
-            print("the client (source id #%d) is gone" % self._source_id)
+            print("the client (source id #%d) gone due to connection idle for %d seconds" %
+                  (self._source_id, self._conn_timeout))
         except struct.error as e:
             print("invalid PDU received: %s" % str(e))
 

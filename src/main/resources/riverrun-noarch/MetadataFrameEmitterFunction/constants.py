@@ -31,7 +31,7 @@ def get_net_socket_server_port(default_server_port=9525):
     return port
 
 
-def get_frame_read_type(default_type=""):
+def get_frame_read_type(default_type=READ_TYPE_NET_SOCKET):
     os.environ.setdefault(READ_TYPE_ENV_VAR_NAME, default_type)
     return os.environ[READ_TYPE_ENV_VAR_NAME].strip()
 

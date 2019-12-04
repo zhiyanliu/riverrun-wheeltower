@@ -58,7 +58,7 @@ def get_meta_frame_take_type(default_type=METADATA_FRAME_TAKE_TYPE_SUBSCRIBE):
     return os.environ[METADATA_FRAME_TAKE_TYPE_ENV_VAR_NAME].strip()
 
 
-def get_meta_frame_throttle_tolerate_count(default_count=10):
+def get_meta_frame_throttle_tolerate_count(default_count=0):
     os.environ.setdefault(METADATA_FRAME_THROTTLE_TOLERATE_COUNT_ENV_VAR_NAME, str(default_count))
 
     try:
@@ -85,7 +85,7 @@ def get_video_stream_subscribe_topic(default_topic="rtp"):
     return os.environ[VIDEO_STREAM_SUBSCRIBE_TOPIC_ENV_VAR_NAME].strip()
 
 
-def get_video_stream_take_type(default_type=VIDEO_STREAM_TAKE_TYPE_RESPONSE):
+def get_video_stream_take_type(default_type=VIDEO_STREAM_TAKE_TYPE_SUBSCRIBE):
     os.environ.setdefault(VIDEO_STREAM_TAKE_TYPE_ENV_VAR_NAME, default_type)
     return os.environ[VIDEO_STREAM_TAKE_TYPE_ENV_VAR_NAME].strip()
 
