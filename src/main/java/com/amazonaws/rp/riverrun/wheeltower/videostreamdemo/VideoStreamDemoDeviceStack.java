@@ -72,7 +72,7 @@ public class VideoStreamDemoDeviceStack extends Stack {
     private SecurityGroup createSecurityGroup(Vpc vpc) {
         SecurityGroup sg = SecurityGroup.Builder.create(this, "rr-video-stream-demo-sg")
                 .securityGroupName("rr-video-stream-demo-sg")
-                .description("RiverRun Video Stream demo security group.")
+                .description("Riverrun Video Stream demo security group.")
                 .allowAllOutbound(true)
                 .vpc(vpc)
                 .build();

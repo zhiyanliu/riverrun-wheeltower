@@ -115,7 +115,7 @@ public class VideoStreamDemoAssert {
 
         this.ggUtils.waitGroupDeployDone(this.log, greengrassGroupId, deploymentId);
 
-        log.info("RiverRun has been deployed on the device by Greengrass core");
+        log.info("Riverrun has been deployed on the device by Greengrass core");
     }
 
     private String createGreengressDeployment(final String greengrassGroupId) {
@@ -329,7 +329,7 @@ public class VideoStreamDemoAssert {
 
         try {
             // Deactivate three certificates
-            //      CLI: aws iot update-certificate --new-status INACTIVE --certificate-id <certificate_id>
+            //      CLI: aws iot update-certificate --new-status INACTIVE --certificate-id <certificate-id>
             UpdateCertificateRequest req = new UpdateCertificateRequest();
             req.setCertificateId(certId);
             req.setNewStatus("INACTIVE");
