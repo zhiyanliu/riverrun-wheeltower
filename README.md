@@ -30,7 +30,7 @@ If you would like to try automatic IoT and Lambda resources stack deployment, th
 
 Additional, if you would like to try demonstration, it will not work if:
 
-* Your AWS account user has not right to fully access AWS EC2 and VPC service in WW and China AWS region.
+* Your AWS account user has not right to fully access AWS EC2 and VPC services in WW and China AWS regions.
 
 >>**Preferred software version:**
 >>
@@ -52,7 +52,7 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## Key TODO plan:
 
-- [ ] Add `ec2-image-id` parameter for stack `riverrun-video-stream-demo-device-stack` provisioning, when AMI automatically founding not work in user's region.
+- [X] Add `ec2-image-id` parameter for stack `riverrun-video-stream-demo-device-stack` provisioning, when AMI automatically founding not work in user's region.
 
 ## Contributor
 

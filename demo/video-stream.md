@@ -40,9 +40,10 @@ This document means to give you a guide to produce an easy-to-show demonstration
 >>
 >> Skip this step if you have a real one, you can get certificates, credentials and Greengrass Core configuration in the S3 bucket (the bucket name is provided by output `riverrun-video-stream-demo-greengrass.corefilesbucketname` after the stack deployment), then install Greengrass Core and deploy Riverrun functions by yourself.
 
-- ``cdk deploy riverrun-video-stream-demo-dev -c ec2-key-name=<key-pair-name>``
+- ``cdk deploy riverrun-video-stream-demo-dev [-c ec2-key-name=<key-pair-name>] [-c ec2-image-id=<ec2-ami-id>]``
     
-    - Update `key-pair-name` parameter in above command to provide SSH key pair to inject the public key to the EC2 instance, if you would like to use `ssh` login it, to debug or check log for example.
+    - Update `ec2-image-id` optional parameter in above command to provide AMI ID to provision EC2 instance using an Ubuntu 18.04lts x64 operation system in your region. CDK will lookup an Amazon official AMI contains Ubuntu 18.04lts x64 for your by default.
+    - Update `key-pair-name` optional parameter in above command to provide SSH key pair name to inject the public key to the EC2 instance, if you would like to use `ssh` login it, to debug or check log for example.
 
 ## 3. Execute Greengrass Group deployment 
 

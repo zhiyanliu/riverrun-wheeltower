@@ -17,6 +17,7 @@ public class VideoStreamDemoDeviceStack extends Stack {
     private final StackOutputQuerier outputQuerier = new StackOutputQuerier();
     private final S3 s3util = new S3();
 
+    private final String ec2ImageID;
     private final String ec2KeyName;
     private String ec2SetupScriptURL;
 
@@ -30,6 +31,13 @@ public class VideoStreamDemoDeviceStack extends Stack {
     public VideoStreamDemoDeviceStack(final Construct parent, final String id,
                                       final StackProps props, final String videoStreamDemoGreengrassStackName) {
         super(parent, id, props);
+
+        Object ec2DeviceImageIDObj = this.getNode().tryGetContext("ec2-image-id");
+        if (ec2DeviceImageIDObj == null)
+            // will lookup the Ubuntu 18.04 x86_64 AMI
+            this.ec2ImageID = null;
+        else
+            this.ec2ImageID = ec2DeviceImageIDObj.toString();
 
         Object ec2KeyNameObj = this.getNode().tryGetContext("ec2-key-name");
         if (ec2KeyNameObj == null)
@@ -90,22 +98,31 @@ public class VideoStreamDemoDeviceStack extends Stack {
     }
 
     private void createEC2Device(Vpc vpc, SecurityGroup sg) {
-        Map<String, List<String>> filters = new HashMap<>();
-        filters.put("architecture", Arrays.asList("x86_64"));
-        filters.put("image-type", Arrays.asList("machine"));
-        filters.put("is-public", Arrays.asList("true"));
-        filters.put("state", Arrays.asList("available"));
-        filters.put("virtualization-type", Arrays.asList("hvm"));
+        IMachineImage image;
 
-        LookupMachineImage image = LookupMachineImage.Builder.create()
-                .name("*ubuntu-bionic-18.04-amd64-server-*")
-                .windows(false)
-                // in order to use the image in the AWS Marketplace product,
-                // user needs to accept terms and subscribe.
-                // To prevent this additional action, we use amazon built-in image only here.
-                .owners(Arrays.asList("amazon"))
-                .filters(filters)
-                .build();
+        if (this.ec2ImageID == null) {
+            Map<String, List<String>> filters = new HashMap<>();
+            filters.put("architecture", Arrays.asList("x86_64"));
+            filters.put("image-type", Arrays.asList("machine"));
+            filters.put("is-public", Arrays.asList("true"));
+            filters.put("state", Arrays.asList("available"));
+            filters.put("virtualization-type", Arrays.asList("hvm"));
+
+            image = LookupMachineImage.Builder.create()
+                    .name("*ubuntu-bionic-18.04-amd64-server-*")
+                    .windows(false)
+                    // in order to use the image in the AWS Marketplace product,
+                    // user needs to accept terms and subscribe.
+                    // To prevent this additional action, we use amazon built-in image only here.
+                    .owners(Arrays.asList("amazon"))
+                    .filters(filters)
+                    .build();
+        } else {
+            Map<String, String> filters = new HashMap<>();
+            filters.put(this.getRegion(), this.ec2ImageID);
+
+            image = GenericLinuxImage.Builder.create(filters).build();
+        }
 
         Instance instance = Instance.Builder.create(this, "rr-video-stream-demo-ec2-device")
                 .machineImage(image)
