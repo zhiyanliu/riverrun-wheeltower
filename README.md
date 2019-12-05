@@ -6,7 +6,7 @@ Mainly, and currently, Riverrun - WheelTower provides three functions:
 
 1. Automatize the IoT and Lambda resources provisioning, as well as the demonstration stack deployment, powered by AWS CDK and CloudFormation service.
 2. As a control plane to maximize the automation of the demonstration. Supported demo listed as following:
-    - Video streaming with object detection and human properties.
+    - Video streaming with object detection and human property recognition.
 3. As the sample code to show the proper way to transmit the video streaming data and structuring data to the Riverrun services by the socket API.
 
 ## Why [we](mailto:awscn-sa-prototyping@amazon.com) develop it
@@ -48,7 +48,7 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## How to play demonstration
 
-- Video streaming with object detection and human properties play guide: [here](http://git.awsrun.com/rp/riverrun-wheeltower/blob/master/demo/video-stream.md)
+- Video streaming with object detection and human property recognition result play guide: [here](http://git.awsrun.com/rp/riverrun-wheeltower/blob/master/demo/video-stream.md)
 
 ## Key TODO plan:
 
