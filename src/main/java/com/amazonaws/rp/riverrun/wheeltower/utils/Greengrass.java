@@ -9,7 +9,7 @@ public class Greengrass {
     public void resetGroupDeployment(final Logger log, final String greengrassGroupId) {
         AWSGreengrass greengrassClient = AWSGreengrassClientBuilder.defaultClient();
 
-        log.debug("connected to AWS Greengrass service");
+        log.debug("connected to AWS IoT Greengrass service");
 
 
         ResetDeploymentsRequest req = new ResetDeploymentsRequest();
@@ -38,7 +38,7 @@ public class Greengrass {
     public void waitGroupDeployDone(final Logger log, final String greengrassGroupId, final String deploymentId) {
         AWSGreengrass greengrassClient = AWSGreengrassClientBuilder.defaultClient();
 
-        log.debug("connected to AWS Greengrass service");
+        log.debug("connected to AWS IoT Greengrass service");
 
         String status, lastStatus = null;
         do {

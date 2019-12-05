@@ -121,7 +121,7 @@ public class VideoStreamDemoAssert {
     private String createGreengressDeployment(final String greengrassGroupId) {
         AWSGreengrass greengrassClient = AWSGreengrassClientBuilder.defaultClient();
 
-        log.debug("connected to AWS Greengrass service");
+        log.debug("connected to AWS IoT Greengrass service");
 
         ListGroupVersionsRequest listGroupVersionsRequest = new ListGroupVersionsRequest();
         listGroupVersionsRequest.setGroupId(greengrassGroupId);

@@ -4,6 +4,7 @@ This document means to give you a guide to produce an easy-to-show demonstration
 
 1. Match the requirements listed in README [limit](http://git.awsrun.com/rp/riverrun-wheeltower#limit) section.
 2. You need a local laptop/PC as the client to run Riverrun - WheelTower program with your AWS credentials as well as certain rights.
+3. AWS IoT Greengress service role should be configured properly. You can follow this [guide](https://docs.aws.amazon.com/greengrass/latest/developerguide/service-role.html) to finish the configuration.
 
 >>**Note:**
 >>
