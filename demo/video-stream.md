@@ -32,17 +32,17 @@ This document means to give you a guide to produce an easy-to-show demonstration
 
     - ``java -jar target/riverrun-wheeltower-1.0-SNAPSHOT-jar-with-dependencies.jar videostream-demo prepare-asset``
 
-## 2. Create fake IoT Greengrass Core device for demo if you have no an own device (optional)
+## 2. Create fake IoT Greengrass core device for demo if you have no an own device (optional)
 
 >>**Note:**
 >>
->> You need an IoT device to act the "thing" to deploy the Riverrun functions and demo the video streaming with object detection and human property recognition.
+>> You need an IoT thing to act the edge device to deploy the Riverrun functions and demo the video streaming with object detection and human property recognition.
 >>
->> Skip this step if you have a real one, you can get certificates, credentials and Greengrass Core configuration in the S3 bucket (the bucket name is provided by output `riverrun-video-stream-demo-greengrass.corefilesbucketname` after the stack deployment), then install Greengrass Core and deploy Riverrun functions by yourself.
+>> Skip this step if you have a real one, you can get certificates, credentials and Greengrass core configuration in the S3 bucket (the bucket name is provided by output `riverrun-video-stream-demo-greengrass.corefilesbucketname` after the stack deployment), then install Greengrass Core and deploy Riverrun functions by yourself.
 
 - ``cdk deploy riverrun-video-stream-demo-dev [-c ec2-key-name=<key-pair-name>] [-c ec2-image-id=<ec2-ami-id>]``
     
-    - Update `ec2-image-id` optional parameter in above command to provide AMI ID to provision EC2 instance using an Ubuntu 18.04lts x64 operation system in your region. CDK will lookup an Amazon official AMI contains Ubuntu 18.04lts x64 for your by default.
+    - Update `ec2-image-id` optional parameter in above command to provide AMI ID to provision EC2 instance using an Ubuntu 18.04lts x64 operation system in your region, e.g. ID  `ami-0cd744adeca97abb1` can be used for region `ap-northeast-1`. CDK will lookup an Amazon official AMI contains Ubuntu 18.04lts x64 for your by default.
     - Update `key-pair-name` optional parameter in above command to provide SSH key pair name to inject the public key to the EC2 instance, if you would like to use `ssh` login it, to debug or check log for example.
 
 ## 3. Execute Greengrass Group deployment 
@@ -53,7 +53,7 @@ This document means to give you a guide to produce an easy-to-show demonstration
 
 - ``java -jar target/riverrun-wheeltower-1.0-SNAPSHOT-jar-with-dependencies.jar videostream-demo send-data``
 
-    - Login the Greengrass Core device which Riverrun running on, command ``sudo tail -F /opt/greengrass/ggc/var/log/user/*/*/rr-video-stream-demo-VideoStreamer.log`` will print the statistics log about the streaming processing like this:
+    - Login the Greengrass core device which Riverrun running on, command ``sudo tail -F /opt/greengrass/ggc/var/log/user/*/*/rr-video-stream-demo-VideoStreamer.log`` will print the statistics log about the streaming processing like this:
  
     ```
     the number of received I frame from the source #10 in last 5 seconds: 10
@@ -75,7 +75,7 @@ This document means to give you a guide to produce an easy-to-show demonstration
 
 - ``java -jar target/riverrun-wheeltower-1.0-SNAPSHOT-jar-with-dependencies.jar videostream-demo cleanup-asset``
 
-## -2. Delete demo IoT Greengrass Core device if you created in step \#2
+## -2. Delete demo IoT Greengrass core device if you created in step \#2
 
 - ``cdk destroy riverrun-video-stream-demo-dev``
 
