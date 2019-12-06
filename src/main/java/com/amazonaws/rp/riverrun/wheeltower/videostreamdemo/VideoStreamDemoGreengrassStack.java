@@ -312,7 +312,7 @@ public class VideoStreamDemoGreengrassStack extends Stack {
 
         return CfnCoreDefinitionVersion.Builder.create(this, GG_CORE_VER_NAME)
                 .coreDefinitionId(coreDefinition.getRef())
-                .cores(Arrays.asList(coreProperty))
+                .cores(Collections.singletonList(coreProperty))
                 .build();
     }
 

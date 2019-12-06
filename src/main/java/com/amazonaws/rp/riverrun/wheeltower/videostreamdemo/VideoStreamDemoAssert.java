@@ -63,10 +63,10 @@ public class VideoStreamDemoAssert {
         this.s3Util.uploadFile(this.log, coreFileBucketName, zipFilePath);
         this.s3Util.uploadFile(this.log, coreFileBucketName, configFilePath);
 
-        String preSignedCredentialsPackageURL =
-                this.s3Util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CREDENTIALS_FILE_NAME, 7);
-        String preSignedConfigURL =
-                this.s3Util.getObjectPreSignedUrl(coreFileBucketName, VideoStreamDemoAssert.CONFIG_FILE_NAME, 7);
+        String preSignedCredentialsPackageURL = this.s3Util.getObjectPreSignedUrl(
+                        this.log, coreFileBucketName, VideoStreamDemoAssert.CREDENTIALS_FILE_NAME, 7);
+        String preSignedConfigURL = this.s3Util.getObjectPreSignedUrl(
+                        this.log, coreFileBucketName, VideoStreamDemoAssert.CONFIG_FILE_NAME, 7);
 
         String scriptFilePath = this.prepareSetupScript(preSignedCredentialsPackageURL, preSignedConfigURL);
 
@@ -245,7 +245,6 @@ public class VideoStreamDemoAssert {
 
     public String prepareConfig(final String thingArn) throws IOException {
         DescribeEndpointRequest req = new DescribeEndpointRequest();
-        // for China region (not support yet, mentioned in README), use iot:Data instead
         req.setEndpointType("iot:Data-ATS");
 
         AWSIot client = AWSIotClientBuilder.defaultClient();

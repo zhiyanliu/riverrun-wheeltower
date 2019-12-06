@@ -13,7 +13,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class S3 {
-    public String getObjectPreSignedUrl(final String bucketName, final String objectName, final int expiredDays) {
+    public String getObjectPreSignedUrl(final Logger log, final String bucketName,
+                                        final String objectName, final int expiredDays) {
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         Calendar c = Calendar.getInstance();
@@ -27,7 +28,7 @@ public class S3 {
         return preSignedURL.toString();
     }
 
-    public void uploadFile(final Logger log, final String bucketName, final String filePath) {
+    public String uploadFile(final Logger log, final String bucketName, final String filePath) {
         File file = new File(filePath);
 
         try {
@@ -44,6 +45,8 @@ public class S3 {
             s3Client.putObject(req);
 
             log.info(String.format("file %s has been uploaded to the bucket %s", file.getName(), bucketName));
+
+            return String.format("https://s3.amazonaws.com/%s/%s", bucketName, file.getName());
         } catch (SdkClientException e) {
             e.printStackTrace();
             log.error(String.format("failed to upload file %s to S3 bucket %s", file.getName(), bucketName));

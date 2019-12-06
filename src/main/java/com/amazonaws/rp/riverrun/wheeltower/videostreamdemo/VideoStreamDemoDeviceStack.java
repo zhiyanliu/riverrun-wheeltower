@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awscdk.core.*;
 import software.amazon.awscdk.services.ec2.*;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class VideoStreamDemoDeviceStack extends Stack {
             this.ec2SetupScriptURL = null;
         else
             this.ec2SetupScriptURL =
-                    this.s3util.getObjectPreSignedUrl(coreFileBucketName, SETUP_SCRIPT_FILE_NAME, 7);
+                    this.s3util.getObjectPreSignedUrl(this.log, coreFileBucketName, SETUP_SCRIPT_FILE_NAME, 7);
 
         // EC2 instance (act device) stuff
         Vpc vpc = this.createVPC();
@@ -73,7 +73,7 @@ public class VideoStreamDemoDeviceStack extends Stack {
                 .enableDnsHostnames(true)
                 .enableDnsSupport(true)
                 .enableDnsSupport(true)
-                .subnetConfiguration(Arrays.asList(subnetConfig))
+                .subnetConfiguration(Collections.singletonList(subnetConfig))
                 .build();
     }
 
@@ -102,11 +102,11 @@ public class VideoStreamDemoDeviceStack extends Stack {
 
         if (this.ec2ImageID == null) {
             Map<String, List<String>> filters = new HashMap<>();
-            filters.put("architecture", Arrays.asList("x86_64"));
-            filters.put("image-type", Arrays.asList("machine"));
-            filters.put("is-public", Arrays.asList("true"));
-            filters.put("state", Arrays.asList("available"));
-            filters.put("virtualization-type", Arrays.asList("hvm"));
+            filters.put("architecture", Collections.singletonList("x86_64"));
+            filters.put("image-type", Collections.singletonList("machine"));
+            filters.put("is-public", Collections.singletonList("true"));
+            filters.put("state", Collections.singletonList("available"));
+            filters.put("virtualization-type", Collections.singletonList("hvm"));
 
             image = LookupMachineImage.Builder.create()
                     .name("*ubuntu-bionic-18.04-amd64-server-*")
@@ -114,7 +114,7 @@ public class VideoStreamDemoDeviceStack extends Stack {
                     // in order to use the image in the AWS Marketplace product,
                     // user needs to accept terms and subscribe.
                     // To prevent this additional action, we use amazon built-in image only here.
-                    .owners(Arrays.asList("amazon"))
+                    .owners(Collections.singletonList("amazon"))
                     .filters(filters)
                     .build();
         } else {
