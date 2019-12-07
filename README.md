@@ -42,7 +42,7 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## How to build
 
-1. ``git clone git@git.awsrun.com:rp/riverrun-wheeltower.git``
+1. ``git clone git@git.awsrun.com:rp/riverrun-wheeltower.git`` or ``git clone http://git.awsrun.com/rp/riverrun-wheeltower.git``
 2. ``cd riverrun-wheeltower``
 3. ``mvn package``
 
