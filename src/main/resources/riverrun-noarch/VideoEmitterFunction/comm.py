@@ -18,6 +18,8 @@ def create_reader():
     elif constants.READ_TYPE_NET_SOCKET == read_type:
         port = constants.get_net_socket_server_port()
         reader = net_sock.VideoPacketNetSocketReader(port=port)
+    else:
+        reader = None
 
     if reader is None:
         print("Invalid environment variables provided for video packet reader")

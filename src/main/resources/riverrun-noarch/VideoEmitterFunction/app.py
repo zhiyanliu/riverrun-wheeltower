@@ -14,7 +14,7 @@ _latest_read_rtp_pkt = None
 def _signal_handler(sig, frame):
     print("signal SIGTERM received")
     global _stop_flag
-    stop_flag = True
+    _stop_flag = True
     time.sleep(2)
     print("video emitter exits")
     sys.exit(0)
