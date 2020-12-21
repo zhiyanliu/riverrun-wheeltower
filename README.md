@@ -9,13 +9,13 @@ Mainly, and currently, Riverrun - WheelTower provides three functions:
     - Video streaming with object detection and human property recognition.
 3. As the sample code to show the proper way to transmit the video streaming data and structuring data to the Riverrun services by the socket API.
 
-## Why [we](mailto:awscn-sa-prototyping@amazon.com) develop it
+## Why develop it
 
-As the pair project of [Riverrun](http://git.awsrun.com/rp/riverrun), we would like to automatize the IoT and Lambda resources creation and configuration, more over, to easy the demonstration of Riverrun provided transformation and synchronization functions. We hope this project can assist SA to understand and use our reusable asset quickly and correctly.
+As the pair project of [Riverrun](https://github.com/zhiyanliu/riverrun), I would like to automatize the IoT and Lambda resources creation and configuration, more over, to easy the demonstration of Riverrun provided transformation and synchronization functions. I hope this project can assist SA to understand and use our reusable asset quickly and correctly.
 
 >> **Note:**
 >>
->> This project is truly under continuative develop stage, we'd like to collect the feedback and include the enhancement in follow-up release to share them with all users. 
+>> This project is truly under continuative develop stage, I'd like to collect the feedback and include the enhancement in follow-up release to share them with all users. 
 >>
 >> **DISCLAIMER: This project is NOT intended for a production environment, and USE AT OWN RISK!**  
 
@@ -42,13 +42,13 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## How to build
 
-1. ``git clone git@git.awsrun.com:rp/riverrun-wheeltower.git`` or ``git clone http://git.awsrun.com/rp/riverrun-wheeltower.git``
+1. ``git clone git@github.com:zhiyanliu/riverrun-wheeltower.git`` or ``git clone https://github.com/zhiyanliu/riverrun-wheeltower.git``
 2. ``cd riverrun-wheeltower``
 3. ``mvn package``
 
 ## How to play demonstration
 
-- Video streaming with object detection and human property recognition result play guide: [here](http://git.awsrun.com/rp/riverrun-wheeltower/blob/master/demo/video-stream.md)
+- Video streaming with object detection and human property recognition result play guide: [here](https://github.com/zhiyanliu/riverrun-wheeltower/blob/master/demo/video-stream.md)
 
 ## Key TODO plan:
 
@@ -56,5 +56,5 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## Contributor
 
-* Zhi Yan Liu,  [liuzhiya@amazon.com](mailto:liuzhiya@amazon.com)
+* Zhi Yan Liu, [liuzhiya@amazon.com](mailto:liuzhiya@amazon.com)
 * You. Welcome any feedback and issue report, further more, idea and code contribution are highly encouraged.
