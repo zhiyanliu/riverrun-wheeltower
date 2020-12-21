@@ -1,6 +1,6 @@
 ## What is this
 
-This is the code repository of the automatic stack deployment and control plane of the demonstration about transformation and synchronization on video streaming and structuring data. The code name of this component is [Riverrun](https://gameofthrones.fandom.com/wiki/Riverrun) - WheelTower, which is the part of Riverrun project and developed by AWS Rapid Prototyping team. 
+This is the code repository of the automatic stack deployment and control plane of the demonstration about transformation and synchronization on video streaming and structuring data. The code name of this component is [Riverrun](https://gameofthrones.fandom.com/wiki/Riverrun) - WheelTower, which is the part of Riverrun project. 
 
 Mainly, and currently, Riverrun - WheelTower provides three functions:
 
@@ -56,5 +56,5 @@ Additional, if you would like to try demonstration, it will not work if:
 
 ## Contributor
 
-* Zhi Yan Liu, AWS Rapid Prototyping team,  [liuzhiya@amazon.com](mailto:liuzhiya@amazon.com)
+* Zhi Yan Liu,  [liuzhiya@amazon.com](mailto:liuzhiya@amazon.com)
 * You. Welcome any feedback and issue report, further more, idea and code contribution are highly encouraged.
